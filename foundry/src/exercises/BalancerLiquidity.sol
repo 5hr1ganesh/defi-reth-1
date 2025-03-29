@@ -13,10 +13,8 @@ import {
 } from "../Constants.sol";
 
 /// @title BalancerLiquidity
-/// @notice This contract allows users to join or exit the Balancer RETH/WETH liquidity pool
-//          by interacting with the Balancer Vault.
-/// @dev The contract facilitates both single-sided and double-sided liquidity provision
-//       to the Balancer pool. Users can deposit RETH and/or WETH to earn Balancer Pool Tokens (BPT).
+/// @notice This contract allows users to join or exit the Balancer RETH/WETH liquidity pool by interacting with the Balancer Vault.
+/// @dev The contract facilitates both single-sided and double-sided liquidity provision to the Balancer pool. Users can deposit RETH and/or WETH to earn Balancer Pool Tokens (BPT).
 contract BalancerLiquidity {
     IRETH private constant reth = IRETH(RETH);
     IERC20 private constant weth = IERC20(WETH);
@@ -93,6 +91,35 @@ contract BalancerLiquidity {
     ///      The user receives Balancer Pool Tokens (BPT) as a representation of their share in the pool.
     function join(uint256 rethAmount, uint256 wethAmount) external {
         // Write your code here
+        if (rethAmount > 0) {
+            reth.transferFrom(msg.sender, address(this), rethAmount);
+            reth.approve(address(vault), rethAmount);
+        }
+        if (wethAmount > 0) {
+            weth.transferFrom(msg.sender, address(this), wethAmount);
+            weth.approve(address(vault), wethAmount);
+        }
+
+        address[] memory assets = new address[](2);
+        // assets[0] = address(reth);
+        assets[0] = RETH;
+        // assets[1] = address(weth);
+        assets[1] = WETH;
+
+        uint256[] memory maxAmountsIn = new uint256[](2);
+        maxAmountsIn[0] = rethAmount;
+        maxAmountsIn[1] = wethAmount;
+
+        _join(msg.sender, assets, maxAmountsIn);
+
+        uint256 rethBal = reth.balanceOf(address(this));
+        uint256 wethBal = weth.balanceOf(address(this));
+        if (rethBal > 0) {
+            reth.transfer(msg.sender, rethBal);
+        }
+        if (wethBal > 0) {
+            weth.transfer(msg.sender, wethBal);
+        }
     }
 
     /// @notice Exit the Balancer liquidity pool and withdraw RETH and/or WETH
@@ -102,5 +129,16 @@ contract BalancerLiquidity {
     ///      It performs an exit from the pool and returns RETH and/or WETH.
     function exit(uint256 bptAmount, uint256 minRethAmountOut) external {
         // Write your code here
+        bpt.transferFrom(msg.sender, address(this), bptAmount);
+
+        address[] memory assets = new address[](2);
+        assets[0] = RETH;
+        assets[1] = WETH;
+
+        uint256[] memory minAmountsOut = new uint256[](2);
+        minAmountsOut[0] = minRethAmountOut;
+        minAmountsOut[1] = 0;
+
+        _exit(bptAmount, msg.sender, assets, minAmountsOut);
     }
 }

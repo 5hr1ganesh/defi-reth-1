@@ -1,6 +1,6 @@
 pragma solidity ^0.8;
 
-import "forge-std/Test.sol";
+import "lib/forge-std/src/Test.sol";
 
 contract TestJson is Test {
     function test() public {

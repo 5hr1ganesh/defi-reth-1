@@ -2,7 +2,7 @@
 // Non-production use
 pragma solidity ^0.8;
 
-import "forge-std/Test.sol";
+import "lib/forge-std/src/Test.sol";
 import {IRewardsCoordinator} from
     "@src/interfaces/eigen-layer/IRewardsCoordinator.sol";
 import {IERC20} from "@src/interfaces/IERC20.sol";
